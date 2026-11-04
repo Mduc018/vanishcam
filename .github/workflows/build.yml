@@ -3,35 +3,36 @@ name: Build Windows Executable
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch: # Cho phép bấm nút "Run workflow" thủ công trên web
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout source code
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.10.11'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller
-        pip install -r requirements.txt
+        pip install pyinstaller opencv-python mediapipe pyvirtualcam numpy
 
     - name: Build EXE with PyInstaller
       run: |
-        pyinstaller --clean VanishCam.spec
+        pyinstaller --noconfirm --onedir --windowed `
+          --add-data "face_landmarker.task;." `
+          --add-data "hand_landmarker.task;." `
+          --add-data "assets;assets" `
+          vanish_cam.py
 
-    - name: Upload Executable Artifact
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: VanishCam-Windows
-        path: dist/
+        path: dist/vanish_cam/
